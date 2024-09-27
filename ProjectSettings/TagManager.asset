@@ -1,0 +1,71 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!78 &1
+TagManager:
+  serializedVersion: 2
+  tags:
+  - Ground
+  - Wall
+  - Enemy
+  - Door
+  - Key
+  - Item
+  - EnemyBoss
+  layers:
+  - Default
+  - TransparentFX
+  - Ignore Raycast
+  - 
+  - Water
+  - UI
+  - Player
+  - Enemy
+  - Obstacle
+  - 
+  - Ground
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  m_SortingLayers:
+  - name: Default
+    uniqueID: 0
+    locked: 0
+  - name: Floor
+    uniqueID: 2066223493
+    locked: 0
+  - name: Player
+    uniqueID: 2836465541
+    locked: 0
+  - name: Items
+    uniqueID: 1533341417
+    locked: 0
+  - name: Enemies
+    uniqueID: 2170305689
+    locked: 0
+  - name: Wall
+    uniqueID: 465605445
+    locked: 0
+  - name: Bullet
+    uniqueID: 1428448969
+    locked: 0
+  - name: UI
+    uniqueID: 1860835771
+    locked: 0

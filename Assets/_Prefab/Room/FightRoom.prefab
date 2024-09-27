@@ -1,0 +1,67 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &8882623608341881383
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7904177119842383013}
+  - component: {fileID: -6268218831759990988}
+  m_Layer: 0
+  m_Name: FightRoom
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &7904177119842383013
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8882623608341881383}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 36.451073, y: 22.869312, z: -1.1107368}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &-6268218831759990988
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8882623608341881383}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 28b9e994edb7a8d4286f1364eb6a55e6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  prefabPlacer: {fileID: 7828282679891277856, guid: bd424b1139ff1d44faa0e268dd08f0e2, type: 3}
+  enemyPlacementData:
+  - minQuantity: 1
+    maxQuantity: 3
+    enemyPrefab: {fileID: 6621830532365433307, guid: a1b47753cbbf6f841bb7e351754aaeee, type: 3}
+    enemySize: {x: 1, y: 1}
+  - minQuantity: 1
+    maxQuantity: 5
+    enemyPrefab: {fileID: 1592737934547011351, guid: 7670a958827f5b34988e986b4ab1485a, type: 3}
+    enemySize: {x: 1, y: 1}
+  - minQuantity: 0
+    maxQuantity: 2
+    enemyPrefab: {fileID: 500567758828383784, guid: ea32d77dff76d8d448cdfa5ca27587b3, type: 3}
+    enemySize: {x: 1, y: 1}
+  itemData:
+  - minQuantity: 3
+    maxQuantity: 4
+    itemData: {fileID: 11400000, guid: f5205b10d3411654ead961d02747e4fc, type: 2}
+  - minQuantity: 1
+    maxQuantity: 2
+    itemData: {fileID: 11400000, guid: 7e6ffdd3680355642af75294c2c018ff, type: 2}
