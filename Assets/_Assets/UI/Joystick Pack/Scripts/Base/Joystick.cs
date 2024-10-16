@@ -14,7 +14,7 @@ public class Joystick : MonoBehaviour, IPointerDownHandler, IDragHandler, IPoint
         get { return handleRange; }
         set { handleRange = Mathf.Abs(value); }
     }
-
+    
     public float DeadZone
     {
         get { return deadZone; }

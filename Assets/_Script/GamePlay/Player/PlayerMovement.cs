@@ -49,6 +49,7 @@ public class PlayerMovement : MonoBehaviour
         js = _js;
     }
 
+    public void UpdateSpeed(float newSpeed) => playerSpeed = newSpeed;
 
 
 }

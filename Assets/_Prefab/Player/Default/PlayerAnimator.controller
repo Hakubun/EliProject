@@ -6,7 +6,7 @@ AnimatorController:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: priest2_v1_1
+  m_Name: PlayerAnimator
   serializedVersion: 5
   m_AnimatorParameters: []
   m_AnimatorLayers:
@@ -59,7 +59,7 @@ AnimatorStateMachine:
   m_ChildStates:
   - serializedVersion: 1
     m_State: {fileID: 7499994475887968721}
-    m_Position: {x: 350, y: 200, z: 0}
+    m_Position: {x: 360, y: 200, z: 0}
   - serializedVersion: 1
     m_State: {fileID: 4212063515453578418}
     m_Position: {x: 386.74597, y: 420.81476, z: 0}

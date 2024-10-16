@@ -58,6 +58,9 @@ public class GameManager : MonoBehaviour
         if (!spawned)
         {
             player = Instantiate(playerPref, pos, Quaternion.identity);
+            PlayerStats.SetLives(5);
+            HUDManager.instance.UpdateHUD();
+
             spawned = true;
             if (_cam != null)
             {
