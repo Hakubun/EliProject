@@ -56,5 +56,5 @@
         "temp/": true,
         "Temp/": true
     },
-    "dotnet.defaultSolution": "InfinitDungeon.sln"
+    "dotnet.defaultSolution": "EliProject.sln"
 }

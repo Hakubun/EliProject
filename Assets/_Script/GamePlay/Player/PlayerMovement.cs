@@ -8,6 +8,8 @@ public class PlayerMovement : MonoBehaviour
     public Rigidbody2D rb;
     public FixedJoystick js;
     private SpriteRenderer spriteRenderer;
+    
+    [SerializeField] PlayerAnimation _anim;
     [Header("PC Debug")]
     public bool keyboardInput; //this is for debug
     private
@@ -16,7 +18,7 @@ public class PlayerMovement : MonoBehaviour
     {
         rb = GetComponent<Rigidbody2D>();
         spriteRenderer = GetComponent<SpriteRenderer>();
-        
+
     }
 
     // Update is called once per frame
@@ -34,14 +36,9 @@ public class PlayerMovement : MonoBehaviour
 
         rb.velocity = velocity;
 
-        if (velocity.x > 0)
-        {
-            spriteRenderer.flipX = false;
-        }
-        else if (velocity.x < 0)
-        {
-            spriteRenderer.flipX = true;
-        }
+        _anim.SetMovementDir(velocity.x, velocity.y);
+
+        
     }
 
     public void SetUpJoyStick(FixedJoystick _js)

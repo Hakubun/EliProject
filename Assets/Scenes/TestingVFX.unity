@@ -355,14 +355,6 @@ PrefabInstance:
       propertyPath: js
       value: 
       objectReference: {fileID: 142855967}
-    - target: {fileID: 228214524816967349, guid: 8b176393dab174144b0f522f4343fdc4, type: 3}
-      propertyPath: keyboardInput
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 487398089969557734, guid: 8b176393dab174144b0f522f4343fdc4, type: 3}
-      propertyPath: m_Materials.Array.data[0]
-      value: 
-      objectReference: {fileID: 2100000, guid: 2bc6acdbc8e3ec14c939f0bd269e6969, type: 2}
     - target: {fileID: 925587045155706699, guid: 8b176393dab174144b0f522f4343fdc4, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
@@ -428,6 +420,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1703056818}
     m_Modifications:
+    - target: {fileID: 737693509326751216, guid: 06dfaafd672775949aff65340145f3d6, type: 3}
+      propertyPath: deadZone
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 7562462420296753511, guid: 06dfaafd672775949aff65340145f3d6, type: 3}
       propertyPath: m_Pivot.x
       value: 0.5
@@ -533,6 +529,10 @@ PrefabInstance:
     - target: {fileID: 565476412163775689, guid: 0dbd84a707c01a442a0ed5712582f6c6, type: 3}
       propertyPath: m_Name
       value: LeftFixedJoystick
+      objectReference: {fileID: 0}
+    - target: {fileID: 2612342133399676569, guid: 0dbd84a707c01a442a0ed5712582f6c6, type: 3}
+      propertyPath: deadZone
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7467438884488210912, guid: 0dbd84a707c01a442a0ed5712582f6c6, type: 3}
       propertyPath: m_Pivot.x

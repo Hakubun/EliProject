@@ -9,15 +9,23 @@ public class BulletSpawner : MonoBehaviour
     public float nextFireTime = 0f;
     public FixedJoystick directionJs;
 
+    [SerializeField] PlayerAnimation _anim;
+
     void Update()
     {
         if (directionJs.Horizontal != 0 || directionJs.Vertical != 0)
         {
+            _anim.setShootingStatus(true);
+            _anim.SetAttackDirection(directionJs.Horizontal, directionJs.Vertical);
+            
             if (Time.time > nextFireTime)
             {
                 FireBullet();
                 nextFireTime = Time.time + fireRate;
             }
+        }
+        else {
+            _anim.setShootingStatus(false);
         }
     }
 
