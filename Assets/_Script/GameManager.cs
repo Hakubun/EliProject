@@ -83,7 +83,7 @@ public class GameManager : MonoBehaviour
         BulletSpawner bulletSpawn = player.GetComponentInChildren<BulletSpawner>();
         if (playerMovement != null)
         {
-            playerMovement.SetUpJoyStick(movement);
+            //playerMovement.SetUpJoyStick(movement);
             attackControl.SetupJoyStick(attack);
             bulletSpawn.SetupJoyStick(attack);
         }
