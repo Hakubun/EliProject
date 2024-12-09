@@ -17,8 +17,6 @@ public class GameManager : MonoBehaviour
     public GameObject playerPref; //this is use to spawn player
     public GameObject portalPref;
     private GameObject player; //this is used to move once it's spawn
-    public FixedJoystick movement;
-    public FixedJoystick attack;
 
     public int currentLevel;
 
@@ -76,21 +74,6 @@ public class GameManager : MonoBehaviour
             player.transform.position = pos;
         }
 
-
-        // Setup the player's joystick for movement (assuming `movement` is your joystick controller)
-        PlayerMovement playerMovement = player.GetComponent<PlayerMovement>();
-        ArrowControll attackControl = player.GetComponentInChildren<ArrowControll>();
-        BulletSpawner bulletSpawn = player.GetComponentInChildren<BulletSpawner>();
-        if (playerMovement != null)
-        {
-            //playerMovement.SetUpJoyStick(movement);
-            attackControl.SetupJoyStick(attack);
-            bulletSpawn.SetupJoyStick(attack);
-        }
-        else
-        {
-            Debug.LogError("PlayerMovement component is missing on the player prefab.");
-        }
 
     }
 

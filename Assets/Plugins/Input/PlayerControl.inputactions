@@ -31,6 +31,15 @@
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": true
+                },
+                {
+                    "name": "MouseAim",
+                    "type": "Value",
+                    "id": "e4d14b5b-4a50-4562-a78c-52af49636447",
+                    "expectedControlType": "Vector2",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": true
                 }
             ],
             "bindings": [
@@ -190,12 +199,12 @@
                 },
                 {
                     "name": "",
-                    "id": "07d98f78-c5b8-4560-aed2-af72fbfde431",
+                    "id": "b50850b6-f7db-4988-b11a-8117e07227a2",
                     "path": "<Mouse>/position",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "Facing",
+                    "action": "MouseAim",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }
