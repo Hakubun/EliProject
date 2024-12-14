@@ -97,6 +97,7 @@ public static class ProceduralGenerationAlgorithms
         while (roomsQueue.Count > 0)
         {
             var room = roomsQueue.Dequeue(); //Dequeue will return the element and remove it from the queue
+            
             if (room.size.y >= minHeight && room.size.x >= minWidth) //check if the space is big enough for room generation, if the x and y is larger than min values, it means the space can be split into multiple space
             {
                 if (Random.value < 0.5f) // 50/50 chance to split the room horizontally or vertically, the reason for this is so the code won't prioritize horizontal split throughout the generation process

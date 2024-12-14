@@ -11598,7 +11598,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &261935606
 Transform:
   m_ObjectHideFlags: 0
@@ -12550,7 +12550,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &1114238423
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -12572,7 +12572,7 @@ MonoBehaviour:
   OnStart:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1971526519}
+      - m_Target: {fileID: 2027240385}
         m_TargetAssemblyTypeName: AbstractDungeonGenerator, Assembly-CSharp
         m_MethodName: GenerateDungeon
         m_Mode: 1
@@ -31467,6 +31467,59 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2010947886}
   m_CullTransparentMesh: 1
+--- !u!1 &2027240384
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2027240386}
+  - component: {fileID: 2027240385}
+  m_Layer: 0
+  m_Name: DungeonGeneratorRoomFirst
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &2027240385
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2027240384}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 192d57bdcd92d914d8439a38a5a7842b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  tilemapVisualizer: {fileID: 1025259290}
+  startPosition: {x: 0, y: 0}
+  randomWalkParameters: {fileID: 11400000, guid: 149f258de5c31ed479d7c381dbdcdf3a, type: 2}
+  minRoomWidth: 10
+  minRoomHeight: 10
+  dungeonWidth: 100
+  dungeonHeight: 100
+  offset: 2
+  randomWalkRooms: 0
+--- !u!4 &2027240386
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2027240384}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &2128394580
 GameObject:
   m_ObjectHideFlags: 0
@@ -31692,9 +31745,10 @@ SceneRoots:
   - {fileID: 1114238424}
   - {fileID: 925296207}
   - {fileID: 1971526520}
-  - {fileID: 261935606}
+  - {fileID: 2027240386}
   - {fileID: 1025259291}
   - {fileID: 717944456}
+  - {fileID: 261935606}
   - {fileID: 1179578491}
   - {fileID: 1564734621}
   - {fileID: 1392784105}
