@@ -2,42 +2,57 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Tilemaps;
+using UnityEngine.Events;
 
 public class PreMadeRoomGen : MonoBehaviour
 {
-    public GameObject startroom; // Prefab for the start room
-    public List<GameObject> roomPrefabs; // List of room prefabs to pick from
-    public GameObject bossRoomPrefab; // Prefab for the boss room
-    public Vector2Int startRoomPos; // Transform for the start room position
-    public int roomsPerLayer = 10; // Number of rooms to generate per layer
-    public int numberOfLayers = 3; // Number of layers to generate
-    public int initialMinRadius = 30; // Minimum spawn radius for the first layer
-    public int initialMaxRadius = 35; // Maximum spawn radius for the first layer
-    public float radiusExpansionFactor = 1.5f; // Factor to expand radius for each new layer
-    public int gapBetweenRooms = 1; // Gap between rooms
+    public GameObject startroom;
+    public List<GameObject> roomPrefabs;
+    public GameObject bossRoomPrefab;
+    public Vector2Int startRoomPos;
+    public int roomsPerLayer = 10;
+    public int numberOfLayers = 3;
+    public int initialMinRadius = 30;
+    public int initialMaxRadius = 35;
+    public float radiusExpansionFactor = 1.5f;
+    public int gapBetweenRooms = 1;
     [Range(1, 4)]
-    public int numberOfBossRooms = 1; // Number of boss rooms to generate (1 to 4)
+    public int numberOfBossRooms = 1;
 
-    public Tilemap floorTilemap, wallTilemap; // Tilemaps to merge tiles into
+    public Tilemap floorTilemap, wallTilemap;
 
-    private List<RectInt> placedRoomBounds = new List<RectInt>(); // List of placed room bounds
+    private HashSet<Vector2Int> occupiedPositions = new HashSet<Vector2Int>();
+    private HashSet<Vector2Int> actualRoomPositions = new HashSet<Vector2Int>();
+    private HashSet<Vector2Int> startRoomConnectionPoints = new HashSet<Vector2Int>();
+    private Dictionary<Vector2Int, HashSet<Vector2Int>> regularRoomConnectionPoints = new Dictionary<Vector2Int, HashSet<Vector2Int>>();
+    private Dictionary<Vector2Int, HashSet<Vector2Int>> bossRoomConnectionPoints = new Dictionary<Vector2Int, HashSet<Vector2Int>>();
 
-    private RectInt bossRoomBounds = new RectInt(); // Stores the boss room bounds
-    private List<RectInt> bossLayerRoomBounds = new List<RectInt>(); // Stores the boss layer room bounds
+    private int bossLayerDistance = 0;
 
-    private int bossLayerDistance = 0; // Calculated distance for the boss layer
+    public UnityEvent<RoomsData> OnRoomsReady;
 
     void Start()
     {
-        // Spawn and merge the start room
         MergeRoomTilemaps(startroom, startRoomPos);
+        StoreConnectionPoints(startroom, startRoomPos, startRoomConnectionPoints);
+        MarkActualRoomTiles(startRoomPos, GetRoomSize(startroom));
 
-        // Generate layers of rooms
         bossLayerDistance = GenerateLayers();
-
-        // Generate the boss layer
         GenerateBossLayer();
+
+        RoomsData data = new RoomsData
+        {
+            StartRoomCenter = this.startRoomPos,
+            occupiedPositions = this.occupiedPositions,
+            actualRoomPositions = this.actualRoomPositions,
+            startRoomConnectionPoints = this.startRoomConnectionPoints,
+            bossRoomConnectionPoints = this.bossRoomConnectionPoints,
+            regularRoomConnectionPoints = this.regularRoomConnectionPoints
+        };
+
+        OnRoomsReady?.Invoke(data);
     }
+
 
     int GenerateLayers()
     {
@@ -47,13 +62,11 @@ public class PreMadeRoomGen : MonoBehaviour
         for (int layer = 1; layer <= numberOfLayers; layer++)
         {
             GenerateRooms(minRadius, maxRadius, roomsPerLayer);
-
-            // Expand the radius for the next layer
             minRadius = maxRadius;
-            maxRadius = Mathf.RoundToInt(maxRadius * radiusExpansionFactor); // Expand radius for the next layer
+            maxRadius = Mathf.RoundToInt(maxRadius * radiusExpansionFactor);
         }
 
-        return maxRadius; // Return the maximum radius for the boss layer
+        return maxRadius;
     }
 
     void GenerateRooms(int minRadius, int maxRadius, int roomCount)
@@ -66,16 +79,16 @@ public class PreMadeRoomGen : MonoBehaviour
             int attempt = 0;
             bool positionFound = false;
 
-            while (attempt < 10) // Limit the number of attempts
+            while (attempt < 10)
             {
                 randomRoomPosition = GetRandomPosition(startRoomPos, minRadius, maxRadius);
                 selectedRoomPrefab = roomPrefabs[Random.Range(0, roomPrefabs.Count)];
                 roomSize = GetRoomSize(selectedRoomPrefab);
 
-                if (!IsOverlapping(randomRoomPosition, roomSize, gapBetweenRooms))
+                if (!IsOverlapping(randomRoomPosition, roomSize))
                 {
                     positionFound = true;
-                    break; // Exit the while loop if a valid position is found
+                    break;
                 }
 
                 attempt++;
@@ -84,28 +97,131 @@ public class PreMadeRoomGen : MonoBehaviour
             if (positionFound)
             {
                 MergeRoomTilemaps(selectedRoomPrefab, randomRoomPosition);
-                placedRoomBounds.Add(CreateRoomBounds(randomRoomPosition, roomSize, gapBetweenRooms));
+                MarkTilesAsOccupied(randomRoomPosition, roomSize); // Mark space with gap
+                MarkActualRoomTiles(randomRoomPosition, roomSize); // Mark only the actual room space
+
+                HashSet<Vector2Int> roomConnections = new HashSet<Vector2Int>();
+                StoreConnectionPoints(selectedRoomPrefab, randomRoomPosition, roomConnections);
+                regularRoomConnectionPoints.Add(randomRoomPosition, roomConnections);
+            }
+
+        }
+    }
+
+    Vector2Int GetRoomSize(GameObject roomPrefab)
+    {
+        Rooms roomComponent = roomPrefab.GetComponent<Rooms>();
+        return roomComponent != null ? roomComponent.getSize() : Vector2Int.one;
+    }
+
+    void MarkActualRoomTiles(Vector2Int position, Vector2Int size)
+    {
+        int halfWidth = Mathf.FloorToInt(size.x / 2f);  // Half-width of the room
+        int halfHeight = Mathf.FloorToInt(size.y / 2f); // Half-height of the room
+
+        for (int x = position.x - halfWidth; x <= position.x + halfWidth; x++) // Inclusive bounds
+        {
+            for (int y = position.y - halfHeight; y <= position.y + halfHeight; y++) // Inclusive bounds
+            {
+                actualRoomPositions.Add(new Vector2Int(x, y));
             }
         }
     }
+
+
+    Vector2Int GetRandomPosition(Vector2Int centerPosition, int minRadius, int maxRadius)
+    {
+        float angle = Random.Range(0f, Mathf.PI * 2);
+        int radius = Random.Range(minRadius, maxRadius);
+        return new Vector2Int(centerPosition.x + Mathf.RoundToInt(radius * Mathf.Cos(angle)),
+                              centerPosition.y + Mathf.RoundToInt(radius * Mathf.Sin(angle)));
+    }
+
+    bool IsOverlapping(Vector2Int position, Vector2Int size)
+    {
+        int gap = gapBetweenRooms;
+        int xStart = position.x - Mathf.FloorToInt(size.x / 2f) - gap;
+        int xEnd = position.x + Mathf.CeilToInt(size.x / 2f) + gap;
+        int yStart = position.y - Mathf.FloorToInt(size.y / 2f) - gap;
+        int yEnd = position.y + Mathf.CeilToInt(size.y / 2f) + gap;
+
+        for (int x = xStart; x < xEnd; x++)
+        {
+            for (int y = yStart; y < yEnd; y++)
+            {
+                if (occupiedPositions.Contains(new Vector2Int(x, y)))
+                {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    void MergeRoomTilemaps(GameObject roomPrefab, Vector2Int spawnPosition)
+    {
+        GameObject roomInstance = Instantiate(roomPrefab, new Vector3(spawnPosition.x, spawnPosition.y, 0), Quaternion.identity);
+
+        Rooms roomComponent = roomInstance.GetComponent<Rooms>();
+        if (roomComponent == null)
+        {
+
+            Destroy(roomInstance);
+            return;
+        }
+
+        MergeTilemap(roomComponent.getFloorTile(), floorTilemap, spawnPosition);
+        MergeTilemap(roomComponent.getWallTile(), wallTilemap, spawnPosition);
+
+        Destroy(roomInstance);
+    }
+
+    private void MergeTilemap(Tilemap sourceTilemap, Tilemap targetTilemap, Vector2Int spawnPosition)
+    {
+        BoundsInt bounds = sourceTilemap.cellBounds;
+        for (int x = 0; x < bounds.size.x; x++)
+        {
+            for (int y = 0; y < bounds.size.y; y++)
+            {
+                Vector3Int localPlace = new Vector3Int(x + bounds.x, y + bounds.y, 0);
+                TileBase tile = sourceTilemap.GetTile(localPlace);
+                if (tile != null)
+                {
+                    Vector3Int worldPlace = new Vector3Int(localPlace.x + spawnPosition.x, localPlace.y + spawnPosition.y, 0);
+                    targetTilemap.SetTile(worldPlace, tile);
+                    occupiedPositions.Add(new Vector2Int(worldPlace.x, worldPlace.y));
+                }
+            }
+        }
+    }
+
+    void MarkTilesAsOccupied(Vector2Int position, Vector2Int size)
+    {
+        int gap = gapBetweenRooms;
+        int halfWidth = Mathf.FloorToInt(size.x / 2f);  // Half-width of the room
+        int halfHeight = Mathf.FloorToInt(size.y / 2f); // Half-height of the room
+
+        for (int x = position.x - halfWidth - gap; x <= position.x + halfWidth + gap; x++) // Inclusive bounds
+        {
+            for (int y = position.y - halfHeight - gap; y <= position.y + halfHeight + gap; y++) // Inclusive bounds
+            {
+                occupiedPositions.Add(new Vector2Int(x, y));
+            }
+        }
+    }
+
 
     void GenerateBossLayer()
     {
         Vector2Int[] cardinalOffsets = new Vector2Int[]
         {
-            new Vector2Int(0, bossLayerDistance), // Up
-            new Vector2Int(0, -bossLayerDistance), // Down
-            new Vector2Int(-bossLayerDistance, 0), // Left
-            new Vector2Int(bossLayerDistance, 0) // Right
+            new Vector2Int(0, bossLayerDistance),
+            new Vector2Int(0, -bossLayerDistance),
+            new Vector2Int(-bossLayerDistance, 0),
+            new Vector2Int(bossLayerDistance, 0)
         };
 
         List<Vector2Int> selectedOffsets = new List<Vector2Int>();
-
-        // Determine which cardinal directions to use based on the number of boss rooms
-        if (numberOfBossRooms < 1 || numberOfBossRooms > 4)
-        {
-            numberOfBossRooms = 1;
-        }
 
         while (selectedOffsets.Count < numberOfBossRooms)
         {
@@ -119,136 +235,88 @@ public class PreMadeRoomGen : MonoBehaviour
         foreach (Vector2Int offset in selectedOffsets)
         {
             Vector2Int bossRoomPosition = startRoomPos + offset;
+            Vector2Int bossRoomDir = GetBossRoomDirection(offset);
+
+            if (offset.x == 0)
+            {
+                bossRoomPosition.x += Random.Range(-bossLayerDistance / 2, bossLayerDistance / 2);
+            }
+            else if (offset.y == 0)
+            {
+                bossRoomPosition.y += Random.Range(-bossLayerDistance / 2, bossLayerDistance / 2);
+            }
+
             Vector2Int bossRoomSize = GetRoomSize(bossRoomPrefab);
 
-            bossRoomBounds = CreateRoomBounds(bossRoomPosition, bossRoomSize, gapBetweenRooms);
-
-            if (!IsOverlapping(bossRoomPosition, bossRoomSize, gapBetweenRooms))
+            if (!IsOverlapping(bossRoomPosition, bossRoomSize))
             {
                 MergeRoomTilemaps(bossRoomPrefab, bossRoomPosition);
-                RectInt roomBounds = CreateRoomBounds(bossRoomPosition, bossRoomSize, gapBetweenRooms);
-                bossLayerRoomBounds.Add(roomBounds);
+                MarkTilesAsOccupied(bossRoomPosition, bossRoomSize);
+                MarkActualRoomTiles(bossRoomPosition, bossRoomSize);
+                HashSet<Vector2Int> bossConnections = new HashSet<Vector2Int>();
+                StoreConnectionPoints(bossRoomPrefab, bossRoomPosition, bossConnections, offset);
+                bossRoomConnectionPoints.Add(bossRoomDir, bossConnections);
             }
         }
     }
 
-    void OnDrawGizmos()
+    void StoreConnectionPoints(GameObject roomPrefab, Vector2Int spawnPosition, HashSet<Vector2Int> connectionSet, Vector2Int? bossDirection = null)
     {
-        // Draw boss room bounds
-        Gizmos.color = Color.red;
-        if (bossRoomBounds.size != Vector2Int.zero)
-        {
-            Gizmos.DrawWireCube(
-                new Vector3(bossRoomBounds.center.x, bossRoomBounds.center.y, 0),
-                new Vector3(bossRoomBounds.width, bossRoomBounds.height, 1)
-            );
-        }
-
-        // Draw all boss layer room bounds
-        Gizmos.color = Color.green;
-        foreach (RectInt roomBounds in bossLayerRoomBounds)
-        {
-            Gizmos.DrawWireCube(
-                new Vector3(roomBounds.center.x, roomBounds.center.y, 0),
-                new Vector3(roomBounds.width, roomBounds.height, 1)
-            );
-        }
-    }
-
-    void MergeRoomTilemaps(GameObject roomPrefab, Vector2Int spawnPosition)
-    {
-        GameObject roomInstance = Instantiate(roomPrefab, new Vector3(spawnPosition.x, spawnPosition.y, 0), Quaternion.identity);
-
-        Rooms roomComponent = roomInstance.GetComponent<Rooms>();
+        Rooms roomComponent = roomPrefab.GetComponent<Rooms>();
         if (roomComponent == null)
         {
-            Destroy(roomInstance);
+
             return;
         }
 
-        Tilemap floorTilemapInRoom = roomComponent.getFloorTile();
-        Tilemap wallTilemapInRoom = roomComponent.getWallTile();
+        Vector2Int[] roomConnections = roomComponent.getConnectionPoints();
 
-        if (floorTilemapInRoom != null)
+        foreach (var connection in roomConnections)
         {
-            MergeTilemap(floorTilemapInRoom, floorTilemap, spawnPosition);
-        }
+            Vector2Int worldPosition = connection + spawnPosition;
 
-        if (wallTilemapInRoom != null)
-        {
-            MergeTilemap(wallTilemapInRoom, wallTilemap, spawnPosition);
-        }
-
-        Destroy(roomInstance); // Remove the temporary room instance
-    }
-
-    private void MergeTilemap(Tilemap sourceTilemap, Tilemap targetTilemap, Vector2Int spawnPosition)
-    {
-        BoundsInt bounds = sourceTilemap.cellBounds;
-        TileBase[] allTiles = sourceTilemap.GetTilesBlock(bounds);
-
-        for (int x = 0; x < bounds.size.x; x++)
-        {
-            for (int y = 0; y < bounds.size.y; y++)
+            if (bossDirection.HasValue)
             {
-                Vector3Int localPlace = new Vector3Int(x + bounds.x, y + bounds.y, 0);
-
-                TileBase tile = sourceTilemap.GetTile(localPlace);
-
-                if (tile != null)
+                Vector2Int relativeDirection = GetNormalizedDirection(worldPosition - spawnPosition);
+                if (relativeDirection == bossDirection.Value)
                 {
-                    Vector3Int worldPosition = new Vector3Int(
-                        localPlace.x + spawnPosition.x,
-                        localPlace.y + spawnPosition.y,
-                        0
-                    );
-
-                    Matrix4x4 transformMatrix = sourceTilemap.GetTransformMatrix(localPlace);
-                    targetTilemap.SetTile(worldPosition, tile);
-                    targetTilemap.SetTransformMatrix(worldPosition, transformMatrix);
+                    continue;
                 }
             }
+
+            connectionSet.Add(worldPosition);
         }
     }
 
-    Vector2Int GetRandomPosition(Vector2Int centerPosition, int minRadius, int maxRadius)
+    private Vector2Int GetBossRoomDirection(Vector2Int offset)
     {
-        float angle = Random.Range(0f, Mathf.PI * 2); // Random angle in radians
-        int radius = Random.Range(minRadius, maxRadius); // Random radius within the range
-
-        int offsetX = Mathf.RoundToInt(radius * Mathf.Cos(angle));
-        int offsetY = Mathf.RoundToInt(radius * Mathf.Sin(angle));
-
-        return new Vector2Int(centerPosition.x + offsetX, centerPosition.y + offsetY);
-    }
-
-    Vector2Int GetRoomSize(GameObject roomPrefab)
-    {
-        Rooms roomComponent = roomPrefab.GetComponent<Rooms>();
-        if (roomComponent != null)
+        if (offset.x == 0) //up or down
         {
-            return roomComponent.getSize();
-        }
-
-        return Vector2Int.one; // Default size if no Rooms component is found
-    }
-
-    RectInt CreateRoomBounds(Vector2Int position, Vector2Int size, int gap)
-    {
-        Vector2Int expandedSize = size + new Vector2Int(gap, gap);
-        return new RectInt(position.x - expandedSize.x / 2, position.y - expandedSize.y / 2, expandedSize.x, expandedSize.y);
-    }
-
-    bool IsOverlapping(Vector2Int position, Vector2Int size, int gap)
-    {
-        RectInt newRoomBounds = CreateRoomBounds(position, size, gap);
-        foreach (RectInt existingBounds in placedRoomBounds)
-        {
-            if (newRoomBounds.Overlaps(existingBounds))
+            if (offset.y > 0)
             {
-                return true;
+                return Vector2Int.up;
+            }
+            else
+            {
+                return Vector2Int.down;
             }
         }
-        return false;
+        else{
+            if (offset.x > 0) //left or right
+            {
+                return Vector2Int.right;
+            }
+            else
+            {
+                return Vector2Int.left;
+            }
+        }
+    }
+
+    private Vector2Int GetNormalizedDirection(Vector2Int direction)
+    {
+        if (direction.x != 0) direction.x = direction.x > 0 ? 1 : -1;
+        if (direction.y != 0) direction.y = direction.y > 0 ? 1 : -1;
+        return direction;
     }
 }

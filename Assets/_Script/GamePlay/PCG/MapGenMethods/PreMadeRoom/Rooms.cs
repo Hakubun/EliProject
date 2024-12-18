@@ -20,8 +20,7 @@ public class Rooms : MonoBehaviour
     public Tilemap wallTilemap;
 
     // Array of connection points in grid coordinates
-    [SerializeField]
-    private Vector2Int[] connectionPoints;
+    public Vector2Int[] connectionPoints;
 
     private void Start()
     {
@@ -45,25 +44,12 @@ public class Rooms : MonoBehaviour
         return Center; // Return the center of the room
     }
 
-    // Function to return connection points as an array of world positions
-    public Vector3[] GetConnectionPointsInWorld()
+    public Vector2Int[] getConnectionPoints()
     {
-        // Create an array to hold world positions of connection points
-        Vector3[] worldPositions = new Vector3[connectionPoints.Length];
-
-        // Loop through each connection point
-        for (int i = 0; i < connectionPoints.Length; i++)
-        {
-            // Convert each connection point from grid to world coordinates
-            Vector3Int gridPoint = new Vector3Int(connectionPoints[i].x, connectionPoints[i].y, 0); // Grid position
-            worldPositions[i] = tilemap.CellToWorld(gridPoint); // Convert to world position
-
-            // Log the converted world position for debugging
-            Debug.Log($"{this.gameObject.name} worldPosition {i}: {worldPositions[i]}");
-        }
-
-        return worldPositions; // Return the array of world positions
+        return connectionPoints; //position in tilemap
     }
+
+    // Function to return connection points as an array of world positions
 
     // Function to get the floor tilemap associated with the room
     public Tilemap getFloorTile()
