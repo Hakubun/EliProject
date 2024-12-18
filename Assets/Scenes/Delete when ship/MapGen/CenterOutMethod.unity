@@ -296,8 +296,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   floorTilemap: {fileID: 905639279}
+  wallTilemap: {fileID: 455677090}
   ConnectionPoints: {fileID: 870275753}
-  floorTile: {fileID: 0}
+  floorTile: {fileID: 11400000, guid: 645cef7e6a7e5ba4c98d10cb8d9cfa4e, type: 2}
+  wallUp: {fileID: 11400000, guid: a8cade58dc9921743bed5445d6a1478e, type: 2}
+  wallDown: {fileID: 11400000, guid: 6534e7f5787ffae4fa7fa1a46062a320, type: 2}
+  wallLeft: {fileID: 11400000, guid: e4f6d31f4f01cd540a7f41a129a674b2, type: 2}
+  wallRight: {fileID: 11400000, guid: 17249614e9dbbf643bc5ece8e9ee1baa, type: 2}
   connectionPointTile: {fileID: 11400000, guid: 471853985ed4b5242ad12af71ace0cf6, type: 2}
 --- !u!4 &376279324
 Transform:

@@ -5,7 +5,6 @@ using UnityEngine.Tilemaps;
 public class HallwayGeneration : MonoBehaviour
 {
     private Vector2Int StartRoomCenter;
-
     private HashSet<Vector2Int> occupiedPositions = new HashSet<Vector2Int>();
     private HashSet<Vector2Int> actualRoomPositions = new HashSet<Vector2Int>();
     private HashSet<Vector2Int> startRoomConnectionPoints = new HashSet<Vector2Int>();
@@ -18,7 +17,7 @@ public class HallwayGeneration : MonoBehaviour
     public Tilemap floorTilemap;
     public Tilemap wallTilemap;
     public Tilemap ConnectionPoints; // Optional: Visualize connection points
-    public TileBase floorTile;
+    public TileBase floorTile, wallUp, wallDown, wallLeft, wallRight;
     public TileBase connectionPointTile;
 
     public void GenerateHallway(RoomsData data)
@@ -30,6 +29,8 @@ public class HallwayGeneration : MonoBehaviour
         ConnectStartRoom();
 
         ConnectBossRoom();
+
+        ConnectRegularRooms();
 
 
     }
@@ -51,7 +52,7 @@ public class HallwayGeneration : MonoBehaviour
             Vector2Int faceDir = GetConnectionDir(connectionPoint);
 
             // Use a tuple to receive two values
-            Vector2Int closestRoomConnectionPoint = FindClosestConnectionPoint(connectionPoint, faceDir, true);
+            Vector2Int closestRoomConnectionPoint = FindClosestConnectionPoint(connectionPoint, faceDir, false);
 
             if (closestRoomConnectionPoint != Vector2Int.zero)
             {
@@ -68,10 +69,11 @@ public class HallwayGeneration : MonoBehaviour
             foreach (var connectionPoint in bossRoom.Value)
             {
                 Vector2Int faceDir = GetConnectionDir(connectionPoint);
-                if (bossRoom.Key == faceDir)
+                if (bossRoom.Key != -faceDir)
                 {
                     Debug.Log($"boss room dirction is {bossRoom.Key} and connection point is facing {faceDir}, {bossRoom.Key == faceDir}");
                     //patch the wall;
+                    PatchConnectionPoint(connectionPoint);
                 }
                 else
                 {
@@ -88,16 +90,61 @@ public class HallwayGeneration : MonoBehaviour
         }
     }
 
-    private Vector2Int FindClosestConnectionPoint(Vector2Int currentPoint, Vector2Int facingDirection, bool startRoom)
+    private void ConnectRegularRooms()
+    {
+        foreach (var room in regularRoomConnectionPoints)
+        {
+            foreach (var connectionPoint in room.Value)
+            {
+                Vector2Int faceDir = GetConnectionDir(connectionPoint);
+
+                Vector2Int closestRoomConnectionPoint = FindClosestConnectionPoint(connectionPoint, faceDir, true);
+
+                if (closestRoomConnectionPoint != Vector2Int.zero)
+                {
+                    DrawHallway(connectionPoint, closestRoomConnectionPoint);
+                    RemoveConnectionPoint(closestRoomConnectionPoint);
+                }
+
+            }
+        }
+    }
+
+    private Vector2Int FindClosestConnectionPoint(Vector2Int currentPoint, Vector2Int facingDirection, bool regularRoom)
     {
         Vector2Int closestPoint = Vector2Int.zero;
-
         float minDistance = float.MaxValue;
 
-        //look for middle point
-        if (!startRoom)
+        // Look for middle point if not in start room
+
+        foreach (var room in regularRoomConnectionPoints)
         {
-            foreach (var point in MidPoints)
+            if (room.Value.Contains(currentPoint))
+            {
+                continue;
+            }
+            foreach (var roomConnectionPoint in room.Value)
+            {
+                currentPoint += facingDirection * 2;
+                // Calculate vector from currentPoint to roomConnectionPoint
+                Vector2Int directionToConnection = roomConnectionPoint - currentPoint;
+
+                // Only consider points generally in the facing direction
+                if (Vector2.Dot(facingDirection, directionToConnection) <= 0)
+                    continue;
+
+                float distance = Vector2Int.Distance(currentPoint, roomConnectionPoint);
+                if (distance < minDistance)
+                {
+                    minDistance = distance;
+                    closestPoint = roomConnectionPoint;
+                }
+            }
+        }
+
+        if (regularRoom)
+        {
+            foreach (var point in hallWaySpace)
             {
                 float distance = Vector2Int.Distance(currentPoint, point);
                 if (distance < minDistance)
@@ -108,33 +155,16 @@ public class HallwayGeneration : MonoBehaviour
             }
         }
 
-        foreach (var room in regularRoomConnectionPoints)
-        {
-            foreach (var roomConnectionPoint in room.Value)
-            {
-                // Exclude connection points that are facing the opposite direction
-                if (GetConnectionDir(roomConnectionPoint) != -facingDirection)
-                    continue;
-
-                float distance = Vector2Int.Distance(currentPoint, roomConnectionPoint);
-                if (distance < minDistance)
-                {
-                    minDistance = distance;
-                    closestPoint = roomConnectionPoint;
-
-                }
-            }
-        }
-
-        return closestPoint; // Return as a tuple
+        return closestPoint;
     }
+
 
 
     private void DrawHallway(Vector2Int start, Vector2Int end)
     {
         // Extend from both sides by 3 tiles and connect in the middle
-        Vector2Int currentStart = ExtendHallway(start, GetConnectionDir(start), 3);
-        Vector2Int currentEnd = ExtendHallway(end, GetConnectionDir(end), 3);
+        Vector2Int currentStart = ExtendHallway(start, GetConnectionDir(start), 2);
+        Vector2Int currentEnd = ExtendHallway(end, GetConnectionDir(end), 2);
 
         ConnectToMidpoint(currentStart, currentEnd);
     }
@@ -153,6 +183,7 @@ public class HallwayGeneration : MonoBehaviour
     private void ConnectToMidpoint(Vector2Int start, Vector2Int end)
     {
         Vector2Int midpoint = CalculateMidpoint(start, end);
+        ConnectionPoints.SetTile(new Vector3Int(midpoint.x, midpoint.y, 0), connectionPointTile);
         MidPoints.Add(midpoint);
 
         // Connect start to midpoint
@@ -164,60 +195,18 @@ public class HallwayGeneration : MonoBehaviour
 
     private void DrawPath(Vector2Int from, Vector2Int to)
     {
-        // Directions for movement: up, down, left, right
-        Vector2Int[] directions = { Vector2Int.up, Vector2Int.down, Vector2Int.left, Vector2Int.right };
-        HashSet<Vector2Int> visited = new HashSet<Vector2Int>(); // Track visited positions
-        Queue<Vector2Int> queue = new Queue<Vector2Int>();       // Positions to explore
-        Dictionary<Vector2Int, Vector2Int> parent = new Dictionary<Vector2Int, Vector2Int>();
-
-        queue.Enqueue(from);
-        visited.Add(from);
-
-        // BFS to find the path
-        while (queue.Count > 0)
+        Vector2Int current = from;
+        //? might wanna do something to check move y first or x first
+        while (current != to)
         {
-            Vector2Int current = queue.Dequeue();
+            if (current.x != to.x)
+                current.x += current.x < to.x ? 1 : -1;
+            else if (current.y != to.y)
+                current.y += current.y < to.y ? 1 : -1;
 
-            if (current == to)
-                break; // Target reached
-
-            foreach (var dir in directions)
-            {
-                Vector2Int next = current + dir;
-
-                if (!visited.Contains(next) && !actualRoomPositions.Contains(next)) // Valid move
-                {
-                    visited.Add(next);
-                    queue.Enqueue(next);
-                    parent[next] = current; // Track the path
-                }
-            }
-        }
-
-        // Reconstruct the path
-        if (!parent.ContainsKey(to))
-        {
-            Debug.LogWarning("No valid path found to target!");
-            return; // No path found
-        }
-
-        Vector2Int currentPos = to;
-        Stack<Vector2Int> path = new Stack<Vector2Int>();
-
-        while (currentPos != from)
-        {
-            path.Push(currentPos);
-            currentPos = parent[currentPos];
-        }
-
-        // Place tiles along the path
-        while (path.Count > 0)
-        {
-            Vector2Int pos = path.Pop();
-            PlaceFloorTile(pos);
+            PlaceFloorTile(current);
         }
     }
-
 
 
     private void RemoveConnectionPoint(Vector2Int connectionPoint)
@@ -264,12 +253,66 @@ public class HallwayGeneration : MonoBehaviour
     {
 
         floorTilemap.SetTile(new Vector3Int(position.x, position.y, 0), floorTile);
-        ConnectionPoints.SetTile(new Vector3Int(position.x, position.y, 0), connectionPointTile);
+        //ConnectionPoints.SetTile(new Vector3Int(position.x, position.y, 0), connectionPointTile);
 
         occupiedPositions.Add(position);
         hallWaySpace.Add(position);
 
     }
+    #region Patching function
+    private void PatchConnectionPoint(Vector2Int position)
+    {
+        Vector2Int direction = GetConnectionDir(position);
+
+        if (direction == Vector2Int.up)
+        {
+            PatchUp(position);
+        }
+        else if (direction == Vector2Int.down)
+        {
+            PatchDown(position);
+        }
+        else if (direction == Vector2Int.left)
+        {
+            PatchLeft(position);
+        }
+        else if (direction == Vector2Int.right)
+        {
+            PatchRight(position);
+        }
+        else
+        {
+            Debug.LogWarning($"Unexpected connection direction at position {position}: {direction}");
+        }
+    }
+
+    //! might need to pass wall tile accordingly
+    private void PatchLeft(Vector2Int pos)
+    {
+        wallTilemap.SetTile((Vector3Int)pos, wallLeft);
+        wallTilemap.SetTile((Vector3Int)(pos + Vector2Int.up), wallLeft);
+        wallTilemap.SetTile((Vector3Int)(pos + Vector2Int.down), wallLeft);
+    }
+    private void PatchRight(Vector2Int pos)
+    {
+        wallTilemap.SetTile((Vector3Int)pos, wallRight);
+        wallTilemap.SetTile((Vector3Int)(pos + Vector2Int.up), wallRight);
+        wallTilemap.SetTile((Vector3Int)(pos + Vector2Int.down), wallRight);
+    }
+    private void PatchUp(Vector2Int pos)
+    {
+        wallTilemap.SetTile((Vector3Int)pos, wallUp);
+        wallTilemap.SetTile((Vector3Int)(pos + Vector2Int.left), wallUp);
+        wallTilemap.SetTile((Vector3Int)(pos + Vector2Int.right), wallUp);
+    }
+    private void PatchDown(Vector2Int pos)
+    {
+        wallTilemap.SetTile((Vector3Int)pos, wallDown);
+        wallTilemap.SetTile((Vector3Int)(pos + Vector2Int.left), wallDown);
+        wallTilemap.SetTile((Vector3Int)(pos + Vector2Int.right), wallDown);
+    }
+
+    #endregion
 
     private void OnDrawGizmos()
     {
