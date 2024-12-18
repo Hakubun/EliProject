@@ -20,6 +20,7 @@ public class HallwayGeneration : MonoBehaviour
     public TileBase floorTile, wallUp, wallDown, wallLeft, wallRight;
     public TileBase connectionPointTile;
 
+    public float roomMaxDist = 10;
     public void GenerateHallway(RoomsData data)
     {
         // Initialize Data
@@ -114,6 +115,10 @@ public class HallwayGeneration : MonoBehaviour
     {
         Vector2Int closestPoint = Vector2Int.zero;
         float minDistance = float.MaxValue;
+        if (regularRoom)
+        {
+            minDistance = roomMaxDist;
+        }
 
         // Look for middle point if not in start room
 
@@ -125,7 +130,7 @@ public class HallwayGeneration : MonoBehaviour
             }
             foreach (var roomConnectionPoint in room.Value)
             {
-                currentPoint += facingDirection * 2;
+                //currentPoint += facingDirection * 2;
                 // Calculate vector from currentPoint to roomConnectionPoint
                 Vector2Int directionToConnection = roomConnectionPoint - currentPoint;
 
@@ -142,18 +147,18 @@ public class HallwayGeneration : MonoBehaviour
             }
         }
 
-        if (regularRoom)
-        {
-            foreach (var point in hallWaySpace)
-            {
-                float distance = Vector2Int.Distance(currentPoint, point);
-                if (distance < minDistance)
-                {
-                    minDistance = distance;
-                    closestPoint = point;
-                }
-            }
-        }
+        // if (regularRoom)
+        // {
+        //     foreach (var point in hallWaySpace)
+        //     {
+        //         float distance = Vector2Int.Distance(currentPoint, point);
+        //         if (distance < minDistance)
+        //         {
+        //             minDistance = distance;
+        //             closestPoint = point;
+        //         }
+        //     }
+        // }
 
         return closestPoint;
     }
@@ -211,15 +216,32 @@ public class HallwayGeneration : MonoBehaviour
 
     private void RemoveConnectionPoint(Vector2Int connectionPoint)
     {
+        Vector2Int keyToRemove = Vector2Int.zero;
+        bool shouldRemoveKey = false;
+
+        // Iterate over a safe copy of the dictionary keys
         foreach (var room in regularRoomConnectionPoints)
         {
-            if (room.Value.Remove(connectionPoint) && room.Value.Count == 0)
+            if (room.Value.Contains(connectionPoint))
             {
-                regularRoomConnectionPoints.Remove(room.Key);
-                break;
+                room.Value.Remove(connectionPoint); // Remove the connection point
+
+                if (room.Value.Count == 0)
+                {
+                    keyToRemove = room.Key;
+                    shouldRemoveKey = true;
+                }
+                break; // Exit once the connection point is found and removed
             }
         }
+
+        // Remove the key outside of the loop
+        if (shouldRemoveKey)
+        {
+            regularRoomConnectionPoints.Remove(keyToRemove);
+        }
     }
+
 
     private Vector2Int GetConnectionDir(Vector2Int point)
     {
