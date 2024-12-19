@@ -52,8 +52,7 @@ public class HallwayGeneration : MonoBehaviour
         {
             Vector2Int faceDir = GetConnectionDir(connectionPoint);
 
-            // Use a tuple to receive two values
-            Vector2Int closestRoomConnectionPoint = FindClosestConnectionPoint(connectionPoint, faceDir, false);
+            Vector2Int closestRoomConnectionPoint = FindClosestConnectionPoint(connectionPoint, faceDir);
 
             if (closestRoomConnectionPoint != Vector2Int.zero)
             {
@@ -72,13 +71,12 @@ public class HallwayGeneration : MonoBehaviour
                 Vector2Int faceDir = GetConnectionDir(connectionPoint);
                 if (bossRoom.Key != -faceDir)
                 {
-                    Debug.Log($"boss room dirction is {bossRoom.Key} and connection point is facing {faceDir}, {bossRoom.Key == faceDir}");
                     //patch the wall;
                     PatchConnectionPoint(connectionPoint);
                 }
                 else
                 {
-                    Vector2Int closestRoomConnectionPoint = FindClosestConnectionPoint(connectionPoint, faceDir, false);
+                    Vector2Int closestRoomConnectionPoint = FindClosestConnectionPoint(connectionPoint, faceDir);
 
                     if (closestRoomConnectionPoint != Vector2Int.zero)
                     {
@@ -93,34 +91,79 @@ public class HallwayGeneration : MonoBehaviour
 
     private void ConnectRegularRooms()
     {
-        foreach (var room in regularRoomConnectionPoints)
+        foreach (var currentRoom in regularRoomConnectionPoints)
         {
-            foreach (var connectionPoint in room.Value)
-            {
-                Vector2Int faceDir = GetConnectionDir(connectionPoint);
 
-                Vector2Int closestRoomConnectionPoint = FindClosestConnectionPoint(connectionPoint, faceDir, true);
+            foreach (var connectionPoint in currentRoom.Value)
+            {
+                Vector2Int facing = GetConnectionDir(connectionPoint);
+
+                Vector2Int closestRoomConnectionPoint = FindRegularRoomConnectionPoint(connectionPoint, facing);
 
                 if (closestRoomConnectionPoint != Vector2Int.zero)
                 {
+                    //ConnectionPoints.SetTile(new Vector3Int(connectionPoint.x, connectionPoint.y, 0), connectionPointTile);
+                    // ConnectionPoints.SetTile(new Vector3Int(closestRoomConnectionPoint.x, closestRoomConnectionPoint.y, 0), connectionPointTile);
                     DrawHallway(connectionPoint, closestRoomConnectionPoint);
                     RemoveConnectionPoint(closestRoomConnectionPoint);
+                }
+                else
+                {
+                    Debug.Log("Can't find a connection Point");
                 }
 
             }
         }
     }
 
-    private Vector2Int FindClosestConnectionPoint(Vector2Int currentPoint, Vector2Int facingDirection, bool regularRoom)
+    private Vector2Int FindRegularRoomConnectionPoint(Vector2Int currentPoint, Vector2Int facingDirection)
     {
         Vector2Int closestPoint = Vector2Int.zero;
         float minDistance = float.MaxValue;
-        if (regularRoom)
+        currentPoint += facingDirection * 3;
+
+        foreach (var room in regularRoomConnectionPoints)
         {
-            minDistance = roomMaxDist;
+            foreach (var roomConnectionPoint in room.Value)
+            {
+                // Calculate vector from currentPoint to roomConnectionPoint
+                Vector2Int directionToConnection = roomConnectionPoint - currentPoint;
+
+                // Only consider points generally in the facing direction
+                if (GetConnectionDir(roomConnectionPoint) != -facingDirection)
+                    continue;
+                if (!CheckPosition(currentPoint, facingDirection, roomConnectionPoint))
+                    continue;
+                float distance = (currentPoint - roomConnectionPoint).sqrMagnitude;
+                if (distance < minDistance)
+                {
+                    minDistance = distance;
+                    closestPoint = roomConnectionPoint;
+
+
+                }
+            }
         }
 
-        // Look for middle point if not in start room
+        foreach (var space in hallWaySpace)
+        {
+            if (!CheckPosition(currentPoint, facingDirection, space))
+                continue;
+            float distance = (currentPoint - space).sqrMagnitude;
+            if (distance < minDistance)
+            {
+                minDistance = distance;
+                closestPoint = space;
+            }
+        }
+        return closestPoint;
+
+    }
+
+    private Vector2Int FindClosestConnectionPoint(Vector2Int currentPoint, Vector2Int facingDirection)
+    {
+        Vector2Int closestPoint = Vector2Int.zero;
+        float minDistance = float.MaxValue;
 
         foreach (var room in regularRoomConnectionPoints)
         {
@@ -130,7 +173,6 @@ public class HallwayGeneration : MonoBehaviour
             }
             foreach (var roomConnectionPoint in room.Value)
             {
-                //currentPoint += facingDirection * 2;
                 // Calculate vector from currentPoint to roomConnectionPoint
                 Vector2Int directionToConnection = roomConnectionPoint - currentPoint;
 
@@ -138,7 +180,7 @@ public class HallwayGeneration : MonoBehaviour
                 if (Vector2.Dot(facingDirection, directionToConnection) <= 0)
                     continue;
 
-                float distance = Vector2Int.Distance(currentPoint, roomConnectionPoint);
+                float distance = (currentPoint - roomConnectionPoint).sqrMagnitude;
                 if (distance < minDistance)
                 {
                     minDistance = distance;
@@ -147,21 +189,9 @@ public class HallwayGeneration : MonoBehaviour
             }
         }
 
-        // if (regularRoom)
-        // {
-        //     foreach (var point in hallWaySpace)
-        //     {
-        //         float distance = Vector2Int.Distance(currentPoint, point);
-        //         if (distance < minDistance)
-        //         {
-        //             minDistance = distance;
-        //             closestPoint = point;
-        //         }
-        //     }
-        // }
-
         return closestPoint;
     }
+
 
 
 
@@ -187,15 +217,15 @@ public class HallwayGeneration : MonoBehaviour
 
     private void ConnectToMidpoint(Vector2Int start, Vector2Int end)
     {
-        Vector2Int midpoint = CalculateMidpoint(start, end);
-        ConnectionPoints.SetTile(new Vector3Int(midpoint.x, midpoint.y, 0), connectionPointTile);
-        MidPoints.Add(midpoint);
+        // Vector2Int midpoint = CalculateMidpoint(start, end);
+        // // ConnectionPoints.SetTile(new Vector3Int(midpoint.x, midpoint.y, 0), connectionPointTile);
+        // MidPoints.Add(midpoint);
 
         // Connect start to midpoint
-        DrawPath(start, midpoint);
+        DrawPath(start, end);
 
         // Connect end to midpoint
-        DrawPath(end, midpoint);
+        // DrawPath(end, midpoint);
     }
 
     private void DrawPath(Vector2Int from, Vector2Int to)
@@ -263,6 +293,39 @@ public class HallwayGeneration : MonoBehaviour
         return Vector2Int.zero;
     }
 
+    private bool CheckPosition(Vector2Int currentPoint, Vector2Int direction, Vector2Int connectionPoint)
+    {
+        bool result = false;
+        if (direction == Vector2Int.up)
+        {
+            result = connectionPoint.y > currentPoint.y;
+        }
+        else if (direction == Vector2Int.down)
+        {
+            result = connectionPoint.y < currentPoint.y;
+        }
+        else if (direction == Vector2Int.left)
+        {
+            result = connectionPoint.x < currentPoint.x;
+        }
+        else if (direction == Vector2Int.right)
+        {
+            result = connectionPoint.x > currentPoint.x;
+        }
+        else
+        {
+            Debug.LogWarning($"Unexpected connection direction at position {currentPoint}: {direction}");
+            return false;
+        }
+
+        if (!result)
+        {
+            Debug.Log($"{connectionPoint} is not at the {direction} side of the {currentPoint} ");
+        }
+
+        return result;
+    }
+
 
     private Vector2Int CalculateMidpoint(Vector2Int start, Vector2Int end)
     {
@@ -277,7 +340,7 @@ public class HallwayGeneration : MonoBehaviour
         floorTilemap.SetTile(new Vector3Int(position.x, position.y, 0), floorTile);
         //ConnectionPoints.SetTile(new Vector3Int(position.x, position.y, 0), connectionPointTile);
 
-        occupiedPositions.Add(position);
+
         hallWaySpace.Add(position);
 
     }
@@ -339,7 +402,7 @@ public class HallwayGeneration : MonoBehaviour
     private void OnDrawGizmos()
     {
         Gizmos.color = Color.red;
-        foreach (Vector2Int pos in actualRoomPositions)
+        foreach (Vector2Int pos in hallWaySpace)
         {
             Vector3 worldPos = new Vector3(pos.x + 0.5f, pos.y + 0.5f, 0);
             Gizmos.DrawWireCube(worldPos, Vector3.one);

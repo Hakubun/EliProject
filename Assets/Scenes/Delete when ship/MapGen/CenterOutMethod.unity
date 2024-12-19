@@ -237,18 +237,18 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   startroom: {fileID: 8882623608341881383, guid: 697a698e44cf8f04aab3fb769346e175, type: 3}
   roomPrefabs:
-  - {fileID: 8774964862207537175, guid: a747bca04301c2d448a11b38fe9025d6, type: 3}
-  - {fileID: 8774964862207537175, guid: 68393cce5f13cc045a3f90e11922a140, type: 3}
   - {fileID: 8774964862207537175, guid: 536d0eec7e3a4e947b765e6447f66f1b, type: 3}
+  - {fileID: 8774964862207537175, guid: 68393cce5f13cc045a3f90e11922a140, type: 3}
+  - {fileID: 8774964862207537175, guid: a747bca04301c2d448a11b38fe9025d6, type: 3}
   bossRoomPrefab: {fileID: 8882623608341881383, guid: d17c6861dbe06224d88f26244e372f09, type: 3}
   startRoomPos: {x: 0, y: 0}
   roomsPerLayer: 10
-  numberOfLayers: 3
+  numberOfLayers: 2
   initialMinRadius: 40
-  initialMaxRadius: 50
+  initialMaxRadius: 60
   radiusExpansionFactor: 1.3
-  gapBetweenRooms: 2
-  numberOfBossRooms: 4
+  gapBetweenRooms: 6
+  numberOfBossRooms: 3
   floorTilemap: {fileID: 905639279}
   wallTilemap: {fileID: 455677090}
   OnRoomsReady:
@@ -304,6 +304,7 @@ MonoBehaviour:
   wallLeft: {fileID: 11400000, guid: e4f6d31f4f01cd540a7f41a129a674b2, type: 2}
   wallRight: {fileID: 11400000, guid: 17249614e9dbbf643bc5ece8e9ee1baa, type: 2}
   connectionPointTile: {fileID: 11400000, guid: 471853985ed4b5242ad12af71ace0cf6, type: 2}
+  roomMaxDist: 100
 --- !u!4 &376279324
 Transform:
   m_ObjectHideFlags: 0
@@ -313,7 +314,7 @@ Transform:
   m_GameObject: {fileID: 376279322}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 2.190105, y: -59.87966, z: -1.2743751}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
