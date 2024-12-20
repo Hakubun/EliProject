@@ -305,6 +305,7 @@ MonoBehaviour:
   wallRight: {fileID: 11400000, guid: 17249614e9dbbf643bc5ece8e9ee1baa, type: 2}
   connectionPointTile: {fileID: 11400000, guid: 471853985ed4b5242ad12af71ace0cf6, type: 2}
   roomMaxDist: 100
+  blockCheckRange: 0
 --- !u!4 &376279324
 Transform:
   m_ObjectHideFlags: 0
