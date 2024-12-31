@@ -23,6 +23,7 @@ public class PreMadeRoomGen : MonoBehaviour
 
     private HashSet<Vector2Int> occupiedPositions = new HashSet<Vector2Int>();
     private HashSet<Vector2Int> actualRoomPositions = new HashSet<Vector2Int>();
+    private HashSet<Vector2Int> roomWallPositions = new HashSet<Vector2Int>();
     private HashSet<Vector2Int> startRoomConnectionPoints = new HashSet<Vector2Int>();
     private Dictionary<Vector2Int, HashSet<Vector2Int>> regularRoomConnectionPoints = new Dictionary<Vector2Int, HashSet<Vector2Int>>();
     private Dictionary<Vector2Int, HashSet<Vector2Int>> bossRoomConnectionPoints = new Dictionary<Vector2Int, HashSet<Vector2Int>>();
@@ -45,6 +46,7 @@ public class PreMadeRoomGen : MonoBehaviour
             StartRoomCenter = this.startRoomPos,
             occupiedPositions = this.occupiedPositions,
             actualRoomPositions = this.actualRoomPositions,
+            roomWallPositions = this.roomWallPositions,
             startRoomConnectionPoints = this.startRoomConnectionPoints,
             bossRoomConnectionPoints = this.bossRoomConnectionPoints,
             regularRoomConnectionPoints = this.regularRoomConnectionPoints
@@ -171,6 +173,7 @@ public class PreMadeRoomGen : MonoBehaviour
         }
 
         MergeTilemap(roomComponent.getFloorTile(), floorTilemap, spawnPosition);
+        //add the wallpositions to roomWallPositions
         MergeTilemap(roomComponent.getWallTile(), wallTilemap, spawnPosition);
 
         Destroy(roomInstance);
@@ -190,6 +193,10 @@ public class PreMadeRoomGen : MonoBehaviour
                     Vector3Int worldPlace = new Vector3Int(localPlace.x + spawnPosition.x, localPlace.y + spawnPosition.y, 0);
                     targetTilemap.SetTile(worldPlace, tile);
                     occupiedPositions.Add(new Vector2Int(worldPlace.x, worldPlace.y));
+                    if (targetTilemap.tag == "Wall")
+                    {
+                        roomWallPositions.Add(new Vector2Int(worldPlace.x, worldPlace.y));
+                    }
                 }
             }
         }
@@ -301,7 +308,8 @@ public class PreMadeRoomGen : MonoBehaviour
                 return Vector2Int.down;
             }
         }
-        else{
+        else
+        {
             if (offset.x > 0) //left or right
             {
                 return Vector2Int.right;
@@ -319,4 +327,21 @@ public class PreMadeRoomGen : MonoBehaviour
         if (direction.y != 0) direction.y = direction.y > 0 ? 1 : -1;
         return direction;
     }
+
+    // private void OnDrawGizmos()
+    // {
+    //     // Gizmos.color = Color.red;
+    //     // foreach (Vector2Int pos in hallWaySpace)
+    //     // {
+    //     //     Vector3 worldPos = new Vector3(pos.x + 0.5f, pos.y + 0.5f, 0);
+    //     //     Gizmos.DrawWireCube(worldPos, Vector3.one);
+    //     // }
+
+    //     Gizmos.color = Color.green;
+    //     foreach (Vector2Int pos in roomWallPositions)
+    //     {
+    //         Vector3 worldPos = new Vector3(pos.x + 0.5f, pos.y + 0.5f, 0);
+    //         Gizmos.DrawWireCube(worldPos, Vector3.one);
+    //     }
+    // }
 }

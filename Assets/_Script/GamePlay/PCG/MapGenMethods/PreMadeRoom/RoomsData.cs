@@ -8,8 +8,10 @@ public class RoomsData
     public HashSet<Vector2Int> occupiedPositions;
 
     public HashSet<Vector2Int> actualRoomPositions;
+    public HashSet<Vector2Int> roomWallPositions;
     public HashSet<Vector2Int> startRoomConnectionPoints;
     public Dictionary<Vector2Int, HashSet<Vector2Int>> bossRoomConnectionPoints;
 
     public Dictionary<Vector2Int, HashSet<Vector2Int>> regularRoomConnectionPoints;
+
 }

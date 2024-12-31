@@ -58,7 +58,10 @@ public class TilemapVisualizer : MonoBehaviour
     private void PaintSingleTile(Tilemap tilemap, TileBase tile, Vector2Int position)
     {
         var tilePosition = tilemap.WorldToCell((Vector3Int)position); //convert the position we passover to the tilemap's position, because it takes a Vector3 due to tilemap also work with 3d, we will covert the vector2 to vector3
-        tilemap.SetTile(tilePosition, tile);//paint the tile
+        if (tilemap.GetTile(tilePosition) == null)
+        {
+            tilemap.SetTile(tilePosition, tile);//paint the tile
+        }
     }
 
     public void Clear() //clear any existing tiles in the scene

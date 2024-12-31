@@ -7,6 +7,7 @@ public class HallwayGeneration : MonoBehaviour
     private Vector2Int StartRoomCenter;
     private HashSet<Vector2Int> occupiedPositions = new HashSet<Vector2Int>();
     private HashSet<Vector2Int> actualRoomPositions = new HashSet<Vector2Int>();
+    private HashSet<Vector2Int> roomWallPositions = new HashSet<Vector2Int>();
     private HashSet<Vector2Int> startRoomConnectionPoints = new HashSet<Vector2Int>();
     private Dictionary<Vector2Int, HashSet<Vector2Int>> regularRoomConnectionPoints = new Dictionary<Vector2Int, HashSet<Vector2Int>>();
     private Dictionary<Vector2Int, HashSet<Vector2Int>> bossRoomConnectionPoints = new Dictionary<Vector2Int, HashSet<Vector2Int>>();
@@ -15,7 +16,7 @@ public class HallwayGeneration : MonoBehaviour
 
     private HashSet<Vector2Int> hallWaySpace = new HashSet<Vector2Int>();
     private HashSet<Vector2Int> MidPoints = new HashSet<Vector2Int>();
-
+    public TilemapVisualizer tilemapVisualizer;
     public Tilemap floorTilemap;
     public Tilemap wallTilemap;
     public Tilemap ConnectionPoints; // Optional: Visualize connection points
@@ -38,6 +39,13 @@ public class HallwayGeneration : MonoBehaviour
         ExpandAllHallways();
 
         PatchWalls();
+
+        HashSet<Vector2Int> checkWallList = new HashSet<Vector2Int>(actualRoomPositions);
+        checkWallList.ExceptWith(roomWallPositions);
+        checkWallList.UnionWith(hallWaySpace);
+        
+
+        WallGenerator.CreateWalls(checkWallList, tilemapVisualizer);
     }
 
     private void InitializeData(RoomsData data)
@@ -48,6 +56,8 @@ public class HallwayGeneration : MonoBehaviour
         bossRoomConnectionPoints = new Dictionary<Vector2Int, HashSet<Vector2Int>>(data.bossRoomConnectionPoints);
         occupiedPositions = new HashSet<Vector2Int>(data.occupiedPositions);
         actualRoomPositions = new HashSet<Vector2Int>(data.actualRoomPositions);
+        roomWallPositions = new HashSet<Vector2Int>(data.roomWallPositions);
+
     }
 
     private void ConnectStartRoom()
@@ -501,6 +511,7 @@ public class HallwayGeneration : MonoBehaviour
 
 
         hallWaySpace.Add(position);
+        //actualRoomPositions.Add(position);
 
     }
 
@@ -573,30 +584,45 @@ public class HallwayGeneration : MonoBehaviour
     }
 
     //! might need to pass wall tile accordingly
+    
+
     private void PatchLeft(Vector2Int pos)
     {
-        wallTilemap.SetTile((Vector3Int)pos, wallLeft);
-        wallTilemap.SetTile((Vector3Int)(pos + Vector2Int.up), wallLeft);
-        wallTilemap.SetTile((Vector3Int)(pos + Vector2Int.down), wallLeft);
+        AddWallTile(pos, wallLeft);
+        AddWallTile(pos + Vector2Int.up, wallLeft);
+        AddWallTile(pos + Vector2Int.down, wallLeft);
     }
+
     private void PatchRight(Vector2Int pos)
     {
-        wallTilemap.SetTile((Vector3Int)pos, wallRight);
-        wallTilemap.SetTile((Vector3Int)(pos + Vector2Int.up), wallRight);
-        wallTilemap.SetTile((Vector3Int)(pos + Vector2Int.down), wallRight);
+        AddWallTile(pos, wallRight);
+        AddWallTile(pos + Vector2Int.up, wallRight);
+        AddWallTile(pos + Vector2Int.down, wallRight);
     }
+
     private void PatchUp(Vector2Int pos)
     {
-        wallTilemap.SetTile((Vector3Int)pos, wallUp);
-        wallTilemap.SetTile((Vector3Int)(pos + Vector2Int.left), wallUp);
-        wallTilemap.SetTile((Vector3Int)(pos + Vector2Int.right), wallUp);
+        AddWallTile(pos, wallUp);
+        AddWallTile(pos + Vector2Int.left, wallUp);
+        AddWallTile(pos + Vector2Int.right, wallUp);
     }
+
     private void PatchDown(Vector2Int pos)
     {
-        wallTilemap.SetTile((Vector3Int)pos, wallDown);
-        wallTilemap.SetTile((Vector3Int)(pos + Vector2Int.left), wallDown);
-        wallTilemap.SetTile((Vector3Int)(pos + Vector2Int.right), wallDown);
+        AddWallTile(pos, wallDown);
+        AddWallTile(pos + Vector2Int.left, wallDown);
+        AddWallTile(pos + Vector2Int.right, wallDown);
     }
+
+    private void AddWallTile(Vector2Int position, TileBase wallTile)
+    {
+        // Set the tile in the tilemap
+        wallTilemap.SetTile((Vector3Int)position, wallTile);
+
+        // Add the position to the roomWallPosition HashSet
+        roomWallPositions.Add(position);
+    }
+
 
     #endregion
 
@@ -604,6 +630,13 @@ public class HallwayGeneration : MonoBehaviour
     // {
     //     Gizmos.color = Color.red;
     //     foreach (Vector2Int pos in hallWaySpace)
+    //     {
+    //         Vector3 worldPos = new Vector3(pos.x + 0.5f, pos.y + 0.5f, 0);
+    //         Gizmos.DrawWireCube(worldPos, Vector3.one);
+    //     }
+
+    //     Gizmos.color = Color.green;
+    //     foreach (Vector2Int pos in roomWallPositions)
     //     {
     //         Vector3 worldPos = new Vector3(pos.x + 0.5f, pos.y + 0.5f, 0);
     //         Gizmos.DrawWireCube(worldPos, Vector3.one);

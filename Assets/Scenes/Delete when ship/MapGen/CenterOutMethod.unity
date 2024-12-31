@@ -295,6 +295,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 200c7c5bc128ffb4a95f6e126c2c29f6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  tilemapVisualizer: {fileID: 1106856084}
   floorTilemap: {fileID: 905639279}
   wallTilemap: {fileID: 455677090}
   ConnectionPoints: {fileID: 870275753}
@@ -334,7 +335,7 @@ GameObject:
   - component: {fileID: 455677089}
   m_Layer: 0
   m_Name: Wall
-  m_TagString: Untagged
+  m_TagString: Wall
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -837,7 +838,7 @@ GameObject:
   - component: {fileID: 905639278}
   m_Layer: 0
   m_Name: Floor
-  m_TagString: Untagged
+  m_TagString: Ground
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
