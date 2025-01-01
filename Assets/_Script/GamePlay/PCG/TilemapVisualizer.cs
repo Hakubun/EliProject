@@ -11,7 +11,9 @@ public class TilemapVisualizer : MonoBehaviour
     [SerializeField]
     private TileBase floorTile, wallTop, wallSideRight, wallSiderLeft, wallBottom, wallFull,
         wallInnerCornerDownLeft, wallInnerCornerDownRight,
-        wallDiagonalCornerDownRight, wallDiagonalCornerDownLeft, wallDiagonalCornerUpRight, wallDiagonalCornerUpLeft;
+        wallDiagonalCornerDownRight, wallDiagonalCornerDownLeft, wallDiagonalCornerUpRight, wallDiagonalCornerUpLeft,
+        wallTopRight, wallTopLeft, wallBotRight, wallBotLeft,
+        wallTopRightAlt, wallTopLeftAlt, wallBotRightAlt, WallBotLeftAlt;
 
     public void PaintFloorTiles(IEnumerable<Vector2Int> floorPositions) //using IEnumberable so the function accept collection, allow more flexibility instead of only accpeting hashset
     {
@@ -55,13 +57,104 @@ public class TilemapVisualizer : MonoBehaviour
             PaintSingleTile(wallTilemap, tile, position);
     }
 
+    internal void PaintCornerWall(Vector2Int position, string binaryType, string altType)
+    {
+        int typeAsInt = Convert.ToInt32(binaryType, 2);
+        int altInt = Convert.ToInt32(altType, 2);
+        TileBase tile = null;
+        if (WallTypesHelper.TopRight.Contains(typeAsInt))
+        {
+            if (WallTypesHelper.floorBotLeft.Contains(altInt))
+            {
+                tile = wallTopRight;
+            }
+            else
+            {
+                tile = wallTopRightAlt;
+            }
+        }
+        else if (WallTypesHelper.TopLeft.Contains(typeAsInt))
+        {
+            if (WallTypesHelper.floorBotRight.Contains(altInt))
+            {
+                tile = wallTopLeft;
+            }
+            else
+            {
+                tile = wallTopLeftAlt;
+            }
+        }
+        else if (WallTypesHelper.BotLeft.Contains(typeAsInt))
+        {
+            if (WallTypesHelper.floorTopRight.Contains(altInt))
+            {
+                tile = wallBotLeft;
+            }
+            else
+            {
+                tile = WallBotLeftAlt;
+            }
+        }
+        else if (WallTypesHelper.BotRight.Contains(typeAsInt))
+        {
+            if (WallTypesHelper.floorTopLeft.Contains(altInt))
+            {
+                tile = wallBotRight;
+            }
+            else
+            {
+                tile = wallBotRightAlt;
+            }
+        }
+
+
+        if (tile != null)
+            PaintSingleTile(wallTilemap, tile, position);
+    }
+
+    internal void PaintInnerWall(Vector2Int position, string altType)
+    {
+        int typeAsInt = Convert.ToInt32(altType, 2);
+        TileBase tile = null;
+        if (WallTypesHelper.floorBotLeft.Contains(typeAsInt))
+        {
+
+            tile = wallTopRight;
+
+
+        }
+        else if (WallTypesHelper.floorBotRight.Contains(typeAsInt))
+        {
+
+            tile = wallTopLeft;
+
+
+        }
+        else if (WallTypesHelper.floorTopRight.Contains(typeAsInt))
+        {
+
+            tile = wallBotLeft;
+
+        }
+        else if (WallTypesHelper.floorTopLeft.Contains(typeAsInt))
+        {
+
+            tile = wallBotRight;
+
+        }
+
+
+        if (tile != null)
+            PaintSingleTile(wallTilemap, tile, position);
+    }
+
     private void PaintSingleTile(Tilemap tilemap, TileBase tile, Vector2Int position)
     {
         var tilePosition = tilemap.WorldToCell((Vector3Int)position); //convert the position we passover to the tilemap's position, because it takes a Vector3 due to tilemap also work with 3d, we will covert the vector2 to vector3
-        if (tilemap.GetTile(tilePosition) == null)
-        {
-            tilemap.SetTile(tilePosition, tile);//paint the tile
-        }
+        // if (tilemap.GetTile(tilePosition) == null)
+        // {
+        // }
+        tilemap.SetTile(tilePosition, tile);//paint the tile
     }
 
     public void Clear() //clear any existing tiles in the scene

@@ -32,6 +32,46 @@ public static class WallTypesHelper
         0b1000
     };
 
+    public static HashSet<int> TopRight = new HashSet<int>
+    {
+        0b0011
+    };
+
+    public static HashSet<int> TopLeft = new HashSet<int>
+    {
+        0b0110
+    };
+
+    public static HashSet<int> BotRight = new HashSet<int>
+    {
+        0b1001
+    };
+
+    public static HashSet<int> BotLeft = new HashSet<int>
+    {
+        0b1100
+    };
+
+    public static HashSet<int> floorTopRight = new HashSet<int>
+    {
+        0b1000
+    };
+
+    public static HashSet<int> floorTopLeft = new HashSet<int>
+    {
+        0b0001
+    };
+
+    public static HashSet<int> floorBotRight = new HashSet<int>
+    {
+        0b0100
+    };
+
+    public static HashSet<int> floorBotLeft = new HashSet<int>
+    {
+        0b0010
+    };
+
     public static HashSet<int> wallInnerCornerDownLeft = new HashSet<int>
     {
         0b11110001,

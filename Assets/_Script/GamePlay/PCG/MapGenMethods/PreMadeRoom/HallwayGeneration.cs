@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
@@ -9,6 +10,7 @@ public class HallwayGeneration : MonoBehaviour
     private HashSet<Vector2Int> actualRoomPositions = new HashSet<Vector2Int>();
     private HashSet<Vector2Int> roomWallPositions = new HashSet<Vector2Int>();
     private HashSet<Vector2Int> startRoomConnectionPoints = new HashSet<Vector2Int>();
+    private HashSet<Vector2Int> fullFloorList = new HashSet<Vector2Int>();
     private Dictionary<Vector2Int, HashSet<Vector2Int>> regularRoomConnectionPoints = new Dictionary<Vector2Int, HashSet<Vector2Int>>();
     private Dictionary<Vector2Int, HashSet<Vector2Int>> bossRoomConnectionPoints = new Dictionary<Vector2Int, HashSet<Vector2Int>>();
     private Dictionary<Vector2Int, HashSet<Vector2Int>> ConnectedRooms = new Dictionary<Vector2Int, HashSet<Vector2Int>>();
@@ -22,6 +24,12 @@ public class HallwayGeneration : MonoBehaviour
     public Tilemap ConnectionPoints; // Optional: Visualize connection points
     public TileBase floorTile, wallUp, wallDown, wallLeft, wallRight;
     public TileBase connectionPointTile;
+
+    private HashSet<Vector2Int> allWallPositions = new HashSet<Vector2Int>();
+    private HashSet<Vector2Int> basicWallPositions = new HashSet<Vector2Int>();
+    private HashSet<Vector2Int> cornerWallPositions = new HashSet<Vector2Int>();
+
+    private HashSet<Vector2Int> temp = new HashSet<Vector2Int>();
 
     public float roomMaxDist = 10;
     public void GenerateHallway(RoomsData data)
@@ -40,12 +48,9 @@ public class HallwayGeneration : MonoBehaviour
 
         PatchWalls();
 
-        HashSet<Vector2Int> checkWallList = new HashSet<Vector2Int>(actualRoomPositions);
-        checkWallList.ExceptWith(roomWallPositions);
-        checkWallList.UnionWith(hallWaySpace);
-        
+        GenerateWall();
 
-        WallGenerator.CreateWalls(checkWallList, tilemapVisualizer);
+
     }
 
     private void InitializeData(RoomsData data)
@@ -58,6 +63,33 @@ public class HallwayGeneration : MonoBehaviour
         actualRoomPositions = new HashSet<Vector2Int>(data.actualRoomPositions);
         roomWallPositions = new HashSet<Vector2Int>(data.roomWallPositions);
 
+    }
+
+    private void GenerateWall()
+    {
+        //wallTilemap.ClearAllTiles(); //clear all existing walls
+
+        fullFloorList = GetTilePositions(floorTilemap); //get all position of floor
+
+        allWallPositions = WallGenerator.FindWallsInDirections(fullFloorList, Direction2D.diagonalDirectionsList); //get all the postions that needs wall tile
+
+        basicWallPositions = WallGenerator.FilterSimpleWalls(allWallPositions, fullFloorList, Direction2D.cardinalDirectionsList); //find wall that is on the side.
+
+        temp = allWallPositions.Except(basicWallPositions).ToHashSet();
+
+        cornerWallPositions = allWallPositions.Except(basicWallPositions).ToHashSet();
+
+        cornerWallPositions = WallGenerator.FilterCornerWalls(cornerWallPositions, allWallPositions, Direction2D.cardinalDirectionsList);
+
+        temp.ExceptWith(cornerWallPositions);
+
+        WallGenerator.CreateBasicWall(tilemapVisualizer, basicWallPositions, fullFloorList);
+
+        WallGenerator.CreateCornerWall(tilemapVisualizer, cornerWallPositions, allWallPositions, fullFloorList);
+
+        WallGenerator.CreateInnerWal(tilemapVisualizer, temp, fullFloorList);
+
+        // WallGenerator.CreateCornerWalls(tilemapVisualizer, allWallPositions, fullFloorList);
     }
 
     private void ConnectStartRoom()
@@ -583,8 +615,32 @@ public class HallwayGeneration : MonoBehaviour
         }
     }
 
-    //! might need to pass wall tile accordingly
-    
+    private HashSet<Vector2Int> GetTilePositions(Tilemap tilemap)
+    {
+        HashSet<Vector2Int> floors = new HashSet<Vector2Int>();
+        if (tilemap == null)
+        {
+            Debug.LogError("Tilemap is not assigned!");
+            return floors;
+        }
+
+        // Iterate through the bounds of the tilemap
+        BoundsInt bounds = tilemap.cellBounds;
+        for (int x = bounds.xMin; x < bounds.xMax; x++)
+        {
+            for (int y = bounds.yMin; y < bounds.yMax; y++)
+            {
+                Vector3Int pos = new Vector3Int(x, y, 0);
+                if (tilemap.GetTile(pos) != null) // Check if there's a tile
+                {
+                    floors.Add((Vector2Int)pos);
+                }
+            }
+        }
+
+        return floors;
+    }
+
 
     private void PatchLeft(Vector2Int pos)
     {
@@ -618,6 +674,7 @@ public class HallwayGeneration : MonoBehaviour
     {
         // Set the tile in the tilemap
         wallTilemap.SetTile((Vector3Int)position, wallTile);
+        floorTilemap.SetTile((Vector3Int)position, null);
 
         // Add the position to the roomWallPosition HashSet
         roomWallPositions.Add(position);
@@ -626,20 +683,20 @@ public class HallwayGeneration : MonoBehaviour
 
     #endregion
 
-    // private void OnDrawGizmos()
-    // {
-    //     Gizmos.color = Color.red;
-    //     foreach (Vector2Int pos in hallWaySpace)
-    //     {
-    //         Vector3 worldPos = new Vector3(pos.x + 0.5f, pos.y + 0.5f, 0);
-    //         Gizmos.DrawWireCube(worldPos, Vector3.one);
-    //     }
+    private void OnDrawGizmos()
+    {
+        // Gizmos.color = Color.red;
+        // foreach (Vector2Int pos in allWallPositions)
+        // {
+        //     Vector3 worldPos = new Vector3(pos.x + 0.5f, pos.y + 0.5f, 0);
+        //     Gizmos.DrawWireCube(worldPos, Vector3.one);
+        // }
 
-    //     Gizmos.color = Color.green;
-    //     foreach (Vector2Int pos in roomWallPositions)
-    //     {
-    //         Vector3 worldPos = new Vector3(pos.x + 0.5f, pos.y + 0.5f, 0);
-    //         Gizmos.DrawWireCube(worldPos, Vector3.one);
-    //     }
-    // }
+        // Gizmos.color = Color.green;
+        // foreach (Vector2Int pos in temp)
+        // {
+        //     Vector3 worldPos = new Vector3(pos.x + 0.5f, pos.y + 0.5f, 0);
+        //     Gizmos.DrawSphere(worldPos, .5f);
+        // }
+    }
 }

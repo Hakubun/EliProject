@@ -328,20 +328,20 @@ public class PreMadeRoomGen : MonoBehaviour
         return direction;
     }
 
-    // private void OnDrawGizmos()
-    // {
-    //     // Gizmos.color = Color.red;
-    //     // foreach (Vector2Int pos in hallWaySpace)
-    //     // {
-    //     //     Vector3 worldPos = new Vector3(pos.x + 0.5f, pos.y + 0.5f, 0);
-    //     //     Gizmos.DrawWireCube(worldPos, Vector3.one);
-    //     // }
+    private void OnDrawGizmos()
+    {
+        // Gizmos.color = Color.red;
+        // foreach (Vector2Int pos in hallWaySpace)
+        // {
+        //     Vector3 worldPos = new Vector3(pos.x + 0.5f, pos.y + 0.5f, 0);
+        //     Gizmos.DrawWireCube(worldPos, Vector3.one);
+        // }
 
-    //     Gizmos.color = Color.green;
-    //     foreach (Vector2Int pos in roomWallPositions)
-    //     {
-    //         Vector3 worldPos = new Vector3(pos.x + 0.5f, pos.y + 0.5f, 0);
-    //         Gizmos.DrawWireCube(worldPos, Vector3.one);
-    //     }
-    // }
+        // Gizmos.color = Color.green;
+        // foreach (Vector2Int pos in )
+        // {
+        //     Vector3 worldPos = new Vector3(pos.x + 0.5f, pos.y + 0.5f, 0);
+        //     Gizmos.DrawWireCube(worldPos, Vector3.one);
+        // }
+    }
 }
